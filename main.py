@@ -33,7 +33,7 @@ app.add_middleware(
 class ClickPosition(BaseModel):
     x: float
     y: float
-@app.post('/')
+@app.post('/click')
 def create_user(clickposition: ClickPosition):
     input_z = np.array([[clickposition.x/500 * 2 -1, int(clickposition.y * -1) / 500 * 2 +1]])
     nearnum = np.argmin(np.sum((input_z - z)**2, axis=1))
@@ -63,31 +63,14 @@ def create_user(clickposition: ClickPosition):
     near_img.save(stream, format='PNG')  # 画像をPNG形式で保存する場合
     near_image_base64 = base64.b64encode(stream.getvalue()).decode('utf-8')
     return {"image": image_base64, 'nearImage': near_image_base64, 'nearNum': nearnum}
-@app.get("/")
+@app.get("/return_z")
 def Hello():
     z = np.load('outputs/z.npy')
     z = z.tolist()
     return {"z": z}
 
-@app.get("/labels")
+@app.get("/return_labels")
 def Haello():
     labels = np.load('outputs/labels.npy')
     labels = labels.tolist()
     return {"labels": labels}
-
-# @app.post("/click/{}")
-# def nearimage(clickposition: ClickPosition):
-#     input_z = np.array([[clickposition.x/500 * 2 -1, int(clickposition.y * -1) / 500 * 2 +1]])
-
-#     sigma = 0.1
-#     d = (input_z[:, None, :] - z[None, :, :])**2
-#     d = np.sum(d, axis=2)
-#     d = np.exp(-1 / (2 * sigma**2) * d)
-#     y = np.einsum('ij,jd->id', d, x)
-#     y = y / np.sum(d, axis=1, keepdims=True) * 255
-#     y = y.reshape(28, 28)
-#     pil_img = Image.fromarray(y.astype(np.uint8))
-#     stream = io.BytesIO()
-#     pil_img.save(stream, format='PNG')  # 画像をPNG形式で保存する場合
-#     image_base64 = base64.b64encode(stream.getvalue()).decode('utf-8')
-#     return {"image": image_base64}
